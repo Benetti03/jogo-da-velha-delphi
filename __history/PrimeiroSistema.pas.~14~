@@ -1,0 +1,401 @@
+﻿unit PrimeiroSistema;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.Outline,
+  Vcl.ExtCtrls;
+
+type
+  TJogador = (jNenhum, jX, jO);
+  TMiniTabuleiro = record
+    Casas: array[0..8] of TJogador;
+    Vencedor: TJogador; // jNenhum se ainda em jogo
+    Finalizado: Boolean;
+  end;
+  TSuperTabuleiro = record
+    Mini: array[0..8] of TMiniTabuleiro;
+    ProximoMiniObrigatorio: Integer; //-1 = qualquer
+    Vencedor: TJogador;
+  end;
+
+  TForm7 = class(TForm)
+    LabelX: TLabel;
+    LabelO: TLabel;
+    Placar: TLabel;
+    TimerVitoria: TTimer;
+    LinhaHorizontal2: TShape;
+    LinhaHorizontal1: TShape;
+    LinhaVertical1: TShape;
+    LinhaVertical2: TShape;
+    Mini8: TPaintBox;
+    Mini7: TPaintBox;
+    Mini6: TPaintBox;
+    Mini4: TPaintBox;
+    Mini5: TPaintBox;
+    Mini3: TPaintBox;
+    Mini1: TPaintBox;
+    Mini2: TPaintBox;
+    Mini0: TPaintBox;
+    procedure FormCreate(Sender: TObject);
+    procedure BlocoClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure BlocoPaint(Sender: TObject);
+    procedure TimerVitoriaTimer(Sender: TObject);
+  private
+    { Private declarations }
+    JogadorAtual: TJogador;
+    JogoFinalizado: Boolean;
+    PiscarEstado: Boolean;
+    PiscarContador: Integer;
+    MensagemFim: string;
+    VitoriasX: Integer;
+    VitoriasO: Integer;
+    MiniPB: array[0..8] of TPaintBox;
+    Super: TSuperTabuleiro;
+//    function VerificarVitoria(Jogador: Integer): Boolean;
+//    procedure NovoJogo;
+//    procedure FimDeJogo(Mensagem: string);
+//    function TabuleiroCheio: Boolean;
+//    procedure DestacarVitoria(B1, B2, B3: TPaintBox; Jogador: Integer);
+    procedure VerificarMini(MiniIndex: Integer);
+  public
+    { Public declarations }
+  end;
+
+var
+  Form7: TForm7;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm7.FormCreate(Sender: TObject);
+var
+  i, j: Integer;
+begin
+  JogadorAtual := jX;
+  JogoFinalizado := False;
+  VitoriasX := 0;
+  VitoriasO := 0;
+
+  Super.ProximoMiniObrigatorio := -1;
+  for i := 0 to 8 do
+  begin
+    Super.Mini[i].Vencedor := jNenhum;
+    Super.Mini[i].Finalizado := False;
+    for j := 0 to 8 do
+      Super.Mini[i].Casas[j] := jNenhum;
+  end;
+
+  MiniPB[0] := Mini0;
+  MiniPB[1] := Mini1;
+  MiniPB[2] := Mini2;
+  MiniPB[3] := Mini3;
+  MiniPB[4] := Mini4;
+  MiniPB[5] := Mini5;
+  MiniPB[6] := Mini6;
+  MiniPB[7] := Mini7;
+  MiniPB[8] := Mini8;
+
+  for i := 0 to 8 do
+  begin
+    MiniPB[i].Tag := i;
+  end;
+end;
+
+// ---------------------------------------------------------------------
+procedure TForm7.BlocoPaint(Sender: TObject);
+var
+  PB: TPaintBox;
+  MiniIndex, Casa: Integer;
+  x1, y1, x2, y2, cellW, cellH: Integer;
+  miniRec: TMiniTabuleiro;
+  i: Integer;
+begin
+  PB := Sender as TPaintBox;
+
+  MiniIndex := -1;
+  for i := 0 to 8 do
+    if MiniPB[i] = PB then
+    begin
+      MiniIndex := i;
+      Break;
+    end;
+
+  if MiniIndex = -1 then Exit; // segurança
+
+  miniRec := Super.Mini[MiniIndex];
+
+  // dimensões das células
+  cellW := PB.Width div 3;
+  cellH := PB.Height div 3;
+
+  // Fundo: se mini finalizado desenha esmaecido; se for o mini obrigatório destaca; se bloqueado desenha mais claro
+  if miniRec.Finalizado then
+    PB.Canvas.Brush.Color := RGB(230,230,230) // cinza claro p/ finalizados
+  else if (Super.ProximoMiniObrigatorio = -1) or (Super.ProximoMiniObrigatorio = MiniIndex) then
+    PB.Canvas.Brush.Color := clWhite // habilitado
+  else
+    PB.Canvas.Brush.Color := RGB(245,245,245); // desabilitado (levemente cinza)
+  PB.Canvas.FillRect(PB.ClientRect);
+
+  // linhas do GRID do mini
+  PB.Canvas.Pen.Color := clBlack;
+  PB.Canvas.Pen.Width := 2;
+  PB.Canvas.MoveTo(cellW, 0); PB.Canvas.LineTo(cellW, PB.Height);
+  PB.Canvas.MoveTo(2*cellW, 0); PB.Canvas.LineTo(2*cellW, PB.Height);
+  PB.Canvas.MoveTo(0, cellH); PB.Canvas.LineTo(PB.Width, cellH);
+  PB.Canvas.MoveTo(0, 2*cellH); PB.Canvas.LineTo(PB.Width, 2*cellH);
+
+  // Se mini foi vencido, desenhar X ou O grande (centrado)
+  if miniRec.Finalizado and (miniRec.Vencedor <> jNenhum) then
+  begin
+    // desenhar X/O grande no centro do PaintBox
+    if miniRec.Vencedor = jX then
+    begin
+      PB.Canvas.Pen.Width := 6;
+      PB.Canvas.Pen.Color := clRed;
+      PB.Canvas.MoveTo(10, 10);
+      PB.Canvas.LineTo(PB.Width - 10, PB.Height - 10);
+      PB.Canvas.MoveTo(PB.Width - 10, 10);
+      PB.Canvas.LineTo(10, PB.Height - 10);
+    end
+    else
+    begin
+      PB.Canvas.Pen.Width := 6;
+      PB.Canvas.Pen.Color := clBlue;
+      PB.Canvas.Brush.Style := bsClear;
+      PB.Canvas.Ellipse(10, 10, PB.Width - 10, PB.Height - 10);
+    end;
+    Exit;
+  end;
+
+  // Desenhar X e O nas 9 casas normais
+  for Casa := 0 to 8 do
+  begin
+    x1 := (Casa mod 3) * cellW;
+    y1 := (Casa div 3) * cellH;
+    x2 := x1 + cellW;
+    y2 := y1 + cellH;
+
+    case Super.Mini[MiniIndex].Casas[Casa] of
+      jX:
+        begin
+          PB.Canvas.Pen.Width := 4;
+          PB.Canvas.Pen.Color := clRed;
+          PB.Canvas.MoveTo(x1 + 8, y1 + 8);
+          PB.Canvas.LineTo(x2 - 8, y2 - 8);
+          PB.Canvas.MoveTo(x2 - 8, y1 + 8);
+          PB.Canvas.LineTo(x1 + 8, y2 - 8);
+        end;
+      jO:
+        begin
+          PB.Canvas.Pen.Width := 4;
+          PB.Canvas.Pen.Color := clBlue;
+          PB.Canvas.Brush.Style := bsClear;
+          PB.Canvas.Ellipse(x1 + 8, y1 + 8, x2 - 8, y2 - 8);
+        end;
+    end;
+  end;
+end;
+
+// ---------------------------------------------------------------------
+procedure TForm7.BlocoClick(
+  Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  PB: TPaintBox;
+  MiniIndex: Integer;
+  Col, Lin, Casa: Integer;
+  i: Integer;
+begin
+    if JogoFinalizado then Exit;
+
+    PB := Sender as TPaintBox;
+
+    // ✅ CORRIGIR: buscar índice igual ao BlocoPaint
+    MiniIndex := -1;
+    for i := 0 to 8 do
+      if MiniPB[i] = PB then
+      begin
+        MiniIndex := i;
+        Break;
+      end;
+
+    if MiniIndex = -1 then Exit;
+
+    Col := X div (PB.Width div 3);
+    Lin := Y div (PB.Height div 3);
+    if (Col < 0) or (Col > 2) or (Lin < 0) or (Lin > 2) then Exit;
+    Casa := Lin * 3 + Col;
+
+    // 1. Verifica se pode jogar nesse mini
+    if (Super.ProximoMiniObrigatorio <> -1) and
+       (Super.ProximoMiniObrigatorio <> MiniIndex) then
+      Exit;
+
+    // 2. Verifica se mini já está finalizado
+    if Super.Mini[MiniIndex].Finalizado then
+      Exit;
+
+    // 3. Verifica se casa está livre
+    if Super.Mini[MiniIndex].Casas[Casa] <> jNenhum then
+      Exit;
+
+    // 4. Marca jogada
+    Super.Mini[MiniIndex].Casas[Casa] := JogadorAtual;
+
+    // 5. Verifica vitória do mini
+    VerificarMini(MiniIndex);
+
+    // 6. Define próximo mini obrigatório
+    if Super.Mini[Casa].Finalizado then
+      Super.ProximoMiniObrigatorio := -1
+    else
+      Super.ProximoMiniObrigatorio := Casa;
+
+    // 7. Alterna o jogador
+    if JogadorAtual = jX then
+      JogadorAtual := jO
+    else
+      JogadorAtual := jX;
+
+    // 8. Redesenha
+    for i := 0 to 8 do
+      MiniPB[i].Invalidate;
+end;
+// ---------------------------------------------------------------------
+
+procedure TForm7.VerificarMini(MiniIndex: Integer);
+const
+  Linhas: array[0..7, 0..2] of Integer = (
+    (0,1,2),(3,4,5),(6,7,8),
+    (0,3,6),(1,4,7),(2,5,8),
+    (0,4,8),(2,4,6)
+  );
+var
+  i, A, B, C: Integer;
+  Cheio: Boolean;
+  Mini: ^TMiniTabuleiro;
+begin
+  Mini := @Super.Mini[MiniIndex];
+  if Mini^.Finalizado then Exit;
+
+  // vitória
+  for i := 0 to 7 do
+  begin
+    A := Linhas[i,0];
+    B := Linhas[i,1];
+    C := Linhas[i,2];
+    if (Mini^.Casas[A] <> jNenhum) and
+       (Mini^.Casas[A] = Mini^.Casas[B]) and
+       (Mini^.Casas[B] = Mini^.Casas[C]) then
+    begin
+      Mini^.Vencedor := Mini^.Casas[A];
+      Mini^.Finalizado := True;
+      Exit;
+    end;
+  end;
+
+  // empate
+  Cheio := True;
+  for i := 0 to 8 do
+    if Mini^.Casas[i] = jNenhum then
+    begin
+      Cheio := False;
+      Break;
+    end;
+
+  if Cheio then
+  begin
+    Mini^.Vencedor := jNenhum;
+    Mini^.Finalizado := True;
+  end;
+end;
+
+//--------------------------------------------------
+
+//function TForm7.VerificarVitoria(Jogador: Integer): Boolean;
+//begin
+//  Result := True;
+//end;
+//
+//function TForm7.TabuleiroCheio: Boolean;
+//var
+//  I: Integer;
+//begin
+//  Result := True;
+//
+//  for I := 0 to ComponentCount - 1 do
+//  begin
+//    if Components[I] is TPaintBox then
+//      if TPaintBox(Components[I]).Tag = 0 then
+//        Exit(False);
+//  end;
+//end;
+//
+procedure TForm7.TimerVitoriaTimer(Sender: TObject);
+begin
+  PiscarEstado := not PiscarEstado;
+  Inc(PiscarContador);
+
+  Invalidate; // força repaint do form inteiro
+
+  if PiscarContador >= 6 then
+  begin
+    TimerVitoria.Enabled := False;
+    //FimDeJogo(MensagemFim); // ⚠️ agora pode abrir MessageDlg
+  end;
+end;
+
+//procedure TForm7.NovoJogo;
+//var
+//  I: Integer;
+//begin
+//  // Limpa todos os paineis do jogo
+//  for I := 0 to ComponentCount - 1 do
+//  begin
+//    if Components[I] is TPaintBox then
+//    begin
+//      TPaintBox(Components[I]).Tag := 0;
+//      TPaintBox(Components[I]).Invalidate;
+//    end;
+//  end;
+//
+//  JogadorAtual := jX;
+//  JogoFinalizado := False;
+//end;
+//
+//procedure TForm7.FimDeJogo(Mensagem: string);
+//begin
+//  JogoFinalizado := True;
+//  if MessageDlg(Mensagem + sLineBreak + 'Deseja iniciar um novo jogo?',
+//    mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+//  begin
+//    NovoJogo;
+//  end;
+//end;
+//
+//procedure TForm7.DestacarVitoria(B1, B2, B3: TPaintBox; Jogador: Integer);
+//begin
+//  if Jogador = 1 then
+//  begin
+//    B1.Tag := 3;
+//    B2.Tag := 3;
+//    B3.Tag := 3;
+//  end
+//  else
+//  begin
+//    B1.Tag := 4;
+//    B2.Tag := 4;
+//    B3.Tag := 4;
+//  end;
+//
+//  B1.Invalidate;
+//  B2.Invalidate;
+//  B3.Invalidate;
+//end;
+
+end.
