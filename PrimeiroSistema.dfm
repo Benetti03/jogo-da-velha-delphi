@@ -12,34 +12,53 @@ object Form7: TForm7
   Font.Style = []
   Position = poDesigned
   OnCreate = FormCreate
+  OnPaint = FormPaint
   TextHeight = 15
   object LabelX: TLabel
-    Left = 16
-    Top = 104
-    Width = 13
-    Height = 15
+    Left = 8
+    Top = 124
+    Width = 24
+    Height = 30
     Caption = 'X :'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object LabelO: TLabel
-    Left = 16
-    Top = 144
-    Width = 18
-    Height = 15
+    Left = 8
+    Top = 160
+    Width = 33
+    Height = 30
     Caption = 'O : '
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object Placar: TLabel
-    Left = 16
-    Top = 80
-    Width = 32
-    Height = 15
+    Left = 8
+    Top = 72
+    Width = 57
+    Height = 30
     Caption = 'Placar'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object LinhaHorizontal2: TShape
     Left = 192
     Top = 698
     Width = 1156
     Height = 8
-    Brush.Color = clRed
+    Brush.Color = clBlack
     Pen.Style = psClear
   end
   object LinhaHorizontal1: TShape
@@ -47,7 +66,7 @@ object Form7: TForm7
     Top = 354
     Width = 1156
     Height = 8
-    Brush.Color = clRed
+    Brush.Color = clBlack
     Pen.Style = psClear
   end
   object LinhaVertical1: TShape
@@ -55,7 +74,7 @@ object Form7: TForm7
     Top = 24
     Width = 8
     Height = 1012
-    Brush.Color = clRed
+    Brush.Color = clBlack
     Pen.Style = psClear
   end
   object LinhaVertical2: TShape
@@ -63,7 +82,7 @@ object Form7: TForm7
     Top = 24
     Width = 8
     Height = 1012
-    Brush.Color = clRed
+    Brush.Color = clBlack
     Pen.Style = psClear
   end
   object Mini8: TPaintBox
@@ -138,11 +157,18 @@ object Form7: TForm7
     OnMouseDown = BlocoClick
     OnPaint = BlocoPaint
   end
+  object BtnNovoJogo: TButton
+    Left = 8
+    Top = 216
+    Width = 140
+    Height = 41
+    Caption = 'Novo Jogo'
+    TabOrder = 0
+    OnClick = BtnNovoJogoClick
+  end
   object TimerVitoria: TTimer
     Enabled = False
     Interval = 300
     OnTimer = TimerVitoriaTimer
-    Left = 40
-    Top = 176
   end
 end

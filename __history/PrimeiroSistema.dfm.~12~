@@ -1,0 +1,173 @@
+object Form7: TForm7
+  Left = 485
+  Top = 194
+  Caption = 'Primeiro Sistema'
+  ClientHeight = 1123
+  ClientWidth = 1575
+  Color = clWhite
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
+  Position = poDesigned
+  OnCreate = FormCreate
+  TextHeight = 15
+  object LabelX: TLabel
+    Left = 8
+    Top = 120
+    Width = 24
+    Height = 30
+    Caption = 'X :'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object LabelO: TLabel
+    Left = 8
+    Top = 160
+    Width = 33
+    Height = 30
+    Caption = 'O : '
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Placar: TLabel
+    Left = 8
+    Top = 72
+    Width = 57
+    Height = 30
+    Caption = 'Placar'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object LinhaHorizontal2: TShape
+    Left = 192
+    Top = 698
+    Width = 1156
+    Height = 8
+    Brush.Color = clRed
+    Pen.Style = psClear
+  end
+  object LinhaHorizontal1: TShape
+    Left = 192
+    Top = 354
+    Width = 1156
+    Height = 8
+    Brush.Color = clRed
+    Pen.Style = psClear
+  end
+  object LinhaVertical1: TShape
+    Left = 569
+    Top = 24
+    Width = 8
+    Height = 1012
+    Brush.Color = clRed
+    Pen.Style = psClear
+  end
+  object LinhaVertical2: TShape
+    Left = 962
+    Top = 24
+    Width = 8
+    Height = 1012
+    Brush.Color = clRed
+    Pen.Style = psClear
+  end
+  object Mini8: TPaintBox
+    Left = 976
+    Top = 712
+    Width = 372
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini7: TPaintBox
+    Left = 583
+    Top = 712
+    Width = 373
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini6: TPaintBox
+    Left = 192
+    Top = 712
+    Width = 371
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini4: TPaintBox
+    Left = 583
+    Top = 368
+    Width = 373
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini5: TPaintBox
+    Left = 976
+    Top = 368
+    Width = 372
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini3: TPaintBox
+    Left = 192
+    Top = 368
+    Width = 371
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini1: TPaintBox
+    Left = 583
+    Top = 24
+    Width = 373
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini2: TPaintBox
+    Left = 976
+    Top = 24
+    Width = 372
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object Mini0: TPaintBox
+    Left = 190
+    Top = 24
+    Width = 373
+    Height = 324
+    OnMouseDown = BlocoClick
+    OnPaint = BlocoPaint
+  end
+  object BtnNovoJogo: TButton
+    Left = 8
+    Top = 216
+    Width = 140
+    Height = 41
+    Caption = 'Novo Jogo'
+    TabOrder = 0
+    OnClick = BtnNovoJogoClick
+  end
+  object TimerVitoria: TTimer
+    Enabled = False
+    Interval = 300
+    OnTimer = TimerVitoriaTimer
+  end
+end
